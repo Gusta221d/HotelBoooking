@@ -1,7 +1,7 @@
 import pandas as pd
 
 #carrega o dataset da pasta
-df = pd.read_csv('hotel_bookings_course_release_v1.csv')
+df = pd.read_csv('hotel_booking_course_release_v1_pack\hotel_bookings_course_release_v1.csv')
 
 print("--- Dimensões do dataset ---")
 print(f"Total de reservas: {df.shape[0]}")

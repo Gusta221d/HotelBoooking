@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 
 #carrega os dados
-df = pd.read_csv('../hotel_bookings_course_release_v1.csv')
+df = pd.read_csv('hotel_booking_course_release_v1_pack\hotel_bookings_course_release_v1.csv')
 
 #filtra anomalias e remove leakage
 df_clean = df[(df['adr'] > 0) & (df['adr'] < 5000)].copy()

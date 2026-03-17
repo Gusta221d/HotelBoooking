@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.cluster import KMeans
 
 #carrega e limpa dados
-df = pd.read_csv('../hotel_bookings_course_release_v1.csv')
+df = pd.read_csv('hotel_booking_course_release_v1_pack\hotel_bookings_course_release_v1.csv')
 df_clean = df[(df['adr'] > 0) & (df['adr'] < 5000)].copy()
 #lista de variaveis a remover 
 cols_drop = [
