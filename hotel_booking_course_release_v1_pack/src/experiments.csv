@@ -1,0 +1,19 @@
+representation_id,algorithm,k,seed,runtime_sec,silhouette,calinski_harabasz,davies_bouldin
+EUCLID-ComADR,K-Means Baseline,3,42,2.52,0.1006,9188.7,2.5816
+EUCLID-ComADR,K-Means Baseline,4,42,0.94,0.1046,8765.4,2.2725
+EUCLID-ComADR,K-Means Baseline,5,42,0.99,0.0951,8282.9,2.2516
+EUCLID-ComADR,K-Means Baseline,6,42,1.15,0.0871,8473.39,1.9606
+EUCLID-ComADR,K-Means Baseline,7,42,1.43,0.1005,8412.24,1.9628
+EUCLID-ComADR,K-Means Baseline,8,42,1.72,0.1088,8720.24,1.8557
+EUCLID-SemADR,K-Means Baseline,3,42,0.81,0.1006,9138.32,2.6383
+EUCLID-SemADR,K-Means Baseline,4,42,1.12,0.0971,8571.51,2.3394
+EUCLID-SemADR,K-Means Baseline,5,42,0.94,0.0973,8624.97,2.229
+EUCLID-SemADR,K-Means Baseline,6,42,1.11,0.0942,8862.77,1.8168
+EUCLID-SemADR,K-Means Baseline,7,42,1.2,0.1057,9318.84,1.6295
+EUCLID-SemADR,K-Means Baseline,8,42,1.21,0.1126,9698.62,1.6365
+EUCLID-SemADR,K-Means Stability,8,42,2.92,0.1126,9698.62,1.6365
+EUCLID-SemADR,K-Means Stability,8,67,1.57,0.1296,9178.05,1.7223
+EUCLID-SemADR,K-Means Stability,8,123,1.37,0.1056,9405.32,1.7283
+EUCLID-SemADR,K-Means Stability,8,2026,1.52,0.1079,9405.33,1.7285
+EUCLID-SemADR,K-Means Stability,8,71,1.25,0.1038,9190.49,1.7692
+EUCLID-SemADR-Sample20k,Hierarchical Ward,8,42,13.24,0.1143,1617.23,1.5959
