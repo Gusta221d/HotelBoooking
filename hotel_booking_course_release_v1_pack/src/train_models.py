@@ -12,7 +12,7 @@ except ImportError:
     sys.exit(1)
 
 from sklearn.compose import ColumnTransformer 
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, RobustScaler, OneHotEncoder
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
@@ -34,11 +34,24 @@ numeric_features_base = ['lead_time', 'arrival_date_week_number', 'arrival_date_
                          'previous_bookings_not_canceled', 'required_car_parking_spaces', 
                          'total_of_special_requests']
 
-#variantes para testar impacto do ADR
-variants = {
-    'EUCLID-ComADR': numeric_features_base + ['adr'], #com adr
-    'EUCLID-SemADR': numeric_features_base #sem adr
-}
+#variantes para testar impacto do ADR e sensibilidade de scaling
+variants = [
+    {
+        'representation_id': 'EUCLID-ComADR-Standard',
+        'numeric_features': numeric_features_base + ['adr'],
+        'scaler': StandardScaler()
+    },
+    {
+        'representation_id': 'EUCLID-SemADR-Standard',
+        'numeric_features': numeric_features_base,
+        'scaler': StandardScaler()
+    },
+    {
+        'representation_id': 'EUCLID-SemADR-Robust',
+        'numeric_features': numeric_features_base,
+        'scaler': RobustScaler()
+    }
+]
 
 k_grid = [3, 4, 5, 6, 7, 8] #valores de K para o protocolo experimental
 seed = 42 #seed fixa
@@ -46,14 +59,17 @@ results = [] #lista para guardar as metricas
 
 print("\nA começar Protocolo Experimental\n")
 
-for representation_id, numeric_features in variants.items():
+for variant in variants:
+    representation_id = variant['representation_id']
+    numeric_features = variant['numeric_features']
+    scaler = variant['scaler']
     print(f"--> A construir matriz geométrica: {representation_id}")
     
     #comeco do pipeline de preprocessor para euclidian
     preprocessor = ColumnTransformer(
         transformers=[
             #aplica escala normalizada aos valores numericos & codifica as categorias
-            ('num', StandardScaler(), numeric_features),
+            ('num', scaler, numeric_features),
             ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), categorical_features)
         ])
     #dataframe na matriz numerica para EUCLID
