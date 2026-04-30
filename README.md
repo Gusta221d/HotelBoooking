@@ -1,7 +1,3 @@
-# Projeto de Clustering - Hotel Booking Demand
-
-Estudo reprodutível de clustering para a unidade curricular de Unsupervised Learning (2025/2026), usando o dataset **Hotel Booking Demand** (course release v1).
-
 ## Estrutura do Repositório
 
 - `hotel_booking_course_release_v1_pack/runAll.py` -> ponto de entrada único para executar a pipeline completa
@@ -30,7 +26,7 @@ conda env create -f environment.yml
 conda activate hotel-booking-clustering
 ```
 
-## Execução Reprodutível (Ponto de Entrada Único)
+## Execução Reprodutível 
 
 A partir da raiz do repositório:
 
@@ -53,10 +49,4 @@ Após correr a pipeline, os principais artefactos gerados são:
 - `hotel_booking_course_release_v1_pack/src/experiments.csv`
 - `hotel_booking_course_release_v1_pack/src/stability_report.csv`
 - `hotel_booking_course_release_v1_pack/src/cluster_profile_k8.csv`
-- figuras em `hotel_booking_course_release_v1_pack/src/graficos_relatorio/` (boxplot, histograma e dendrograma Ward)
-
-## Notas
-
-- O projeto compara `EUCLID-ComADR-Standard`, `EUCLID-SemADR-Standard` e `EUCLID-SemADR-Robust`.
-- A estabilidade é reportada via ARI pairwise entre múltiplas seeds.
-- O método hierárquico Ward é avaliado numa subamostra controlada e documentado com dendrograma.
+- `hotel_booking_course_release_v1_pack/src/graficos_relatorio/` (boxplot, histograma e dendrograma Ward)
