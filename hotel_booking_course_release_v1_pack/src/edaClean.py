@@ -6,10 +6,10 @@ import os
 print("---------  Clean dados --------- ")
 file_path = '../hotel_bookings_course_release_v1.csv'
 
-#calculo paara o hash md5
+#calculo para o hash SHA-256
 with open(file_path, "rb") as f:
-    file_hash = hashlib.md5(f.read()).hexdigest()
-print(f"\n[Integrity] Dataset MD5 Hash: {file_hash}")
+    file_hash = hashlib.sha256(f.read()).hexdigest()
+print(f"\n[Integrity] Dataset SHA-256 Hash: {file_hash}")
 
 df = pd.read_csv(file_path)
 n_original = len(df)

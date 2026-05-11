@@ -7,7 +7,9 @@ print("\n[Sistema] A limpar antigos para garantir uma execução limpa")
 
 files_to_remove = [
     'hotel_bookings_clean.csv',     
-    'src/experiments.csv'           
+    'src/experiments.csv',
+    'src/stability_report.csv',
+    'src/cluster_profile_k8.csv'
 ]
 
 for file in files_to_remove:
@@ -24,7 +26,8 @@ scripts_to_run = [
     "edaClean.py",              
     "edaVisuals.py",            
     "train_models.py",          
-    "estabel_hierar.py"         
+    "estabel_hierar.py",
+    "cluster_profile.py"
 ]
 print("\n[Sistema] A iniciar a pipeline de Data Science...")
 
@@ -47,3 +50,5 @@ print("Verifica:")
 print(" 1. O dataset limpo está na raiz do projeto (hotel_bookings_clean.csv)")
 print(" 2. Os gráficos estão em src/graficos_relatorio/")
 print(" 3. O histórico de logs está em src/experiments.csv")
+print(" 4. A estabilidade está em src/stability_report.csv")
+print(" 5. O perfil de clusters está em src/cluster_profile_k8.csv")

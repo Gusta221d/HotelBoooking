@@ -40,6 +40,7 @@ Isto executa, por ordem:
 2. `edaVisuals.py`
 3. `train_models.py`
 4. `estabel_hierar.py`
+5. `cluster_profile.py`
 
 ## Principais Outputs
 
