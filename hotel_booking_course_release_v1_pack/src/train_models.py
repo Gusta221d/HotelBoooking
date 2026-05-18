@@ -1,131 +1,163 @@
-import pandas as pd
-import numpy as np
-import time
 import os
 import sys
-
-sys.path.append('src')
-try:
-    from ikmeans import iKMeans
-except ImportError:
-    print("ERRO: Não existe ficheiro ikmeans.py na pasta src")
-    sys.exit(1)
-
-from sklearn.compose import ColumnTransformer 
-from sklearn.preprocessing import StandardScaler, RobustScaler, OneHotEncoder
+import time
+import pandas as pd
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
+from sklearn.metrics import (
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from pipeline_utils import (
+    CATEGORICAL_FEATURES,
+    NUMERIC_BASE,
+    NUMERIC_CALENDAR_RAW,
+    apply_adr_iqr_filter,
+    build_preprocessor,
+    build_rep_id,
+    group_rare_categories,
+    log_row,
+    min_cluster_pct,
+    sample_rule_all,
+    save_selected_k,
+    select_k_from_sweep,
+    short_rep_label,
+)
+sys.path.append(os.path.dirname(__file__))
+from ikmeans import iKMeans  # noqa: E402
 
-print("--------- MODELAÇÃO, IK-MEANS E LOGGING ---------")
+print("--------- MODELACAO, IK-MEANS E LOGGING ---------")
 
-file_path = '../hotel_bookings_clean.csv'
-try:
-    df = pd.read_csv(file_path)
-    print(f"[Info] Dados carregados com sucesso! ({df.shape[0]} reservas)")
-except FileNotFoundError:
-    print(f"ERRO: Não encontrei o {file_path}")
-    sys.exit(1)
+#carrega base clean e reaplica governanca de raros
+df = pd.read_csv("../hotel_bookings_clean.csv")
+df = group_rare_categories(df, CATEGORICAL_FEATURES)
+print(f"[Info] Base clean: {df.shape[0]} reservas")
 
-categorical_features = ['hotel', 'arrival_date_month', 'meal', 'market_segment', 
-                        'distribution_channel', 'reserved_room_type', 'deposit_type', 'customer_type']
-numeric_features_base = ['lead_time', 'arrival_date_week_number', 'arrival_date_day_of_month', 
-                         'stays_in_weekend_nights', 'stays_in_week_nights', 'adults', 'children', 
-                         'babies', 'is_repeated_guest', 'previous_cancellations', 
-                         'previous_bookings_not_canceled', 'required_car_parking_spaces', 
-                         'total_of_special_requests']
+k_grid = [3, 4, 5, 6, 7, 8]
+seed = 42
+results = []
+sweep_rows = []
 
-#variantes para testar impacto do ADR e sensibilidade de scaling
+#quatro representacoes: Std/Robust, SemADR/ComADR, sensibilidade calendario
 variants = [
-    {
-        'representation_id': 'EUCLID-ComADR-Standard',
-        'numeric_features': numeric_features_base + ['adr'],
-        'scaler': StandardScaler()
-    },
-    {
-        'representation_id': 'EUCLID-SemADR-Standard',
-        'numeric_features': numeric_features_base,
-        'scaler': StandardScaler()
-    },
-    {
-        'representation_id': 'EUCLID-SemADR-Robust',
-        'numeric_features': numeric_features_base,
-        'scaler': RobustScaler()
-    }
+    {"scaler_name": "Std", "scaler": StandardScaler(), "adr_status": "no",
+     "numeric": NUMERIC_BASE, "apply_adr_iqr": False, "calendar_mode": "month-OHE"},
+    {"scaler_name": "Robust", "scaler": RobustScaler(), "adr_status": "no",
+     "numeric": NUMERIC_BASE, "apply_adr_iqr": False, "calendar_mode": "month-OHE"},
+    {"scaler_name": "Std", "scaler": StandardScaler(), "adr_status": "yes",
+     "numeric": NUMERIC_BASE + ["adr"], "apply_adr_iqr": True, "calendar_mode": "month-OHE"},
+    {"scaler_name": "Std", "scaler": StandardScaler(), "adr_status": "no",
+     "numeric": NUMERIC_BASE + NUMERIC_CALENDAR_RAW, "apply_adr_iqr": False,
+     "calendar_mode": "month-OHE+week-day-raw"},
 ]
 
-k_grid = [3, 4, 5, 6, 7, 8] #valores de K para o protocolo experimental
-seed = 42 #seed fixa
-results = [] #lista para guardar as metricas
-
-print("\nA começar Protocolo Experimental\n")
-
+#inicia o ciclo por representacao
 for variant in variants:
-    representation_id = variant['representation_id']
-    numeric_features = variant['numeric_features']
-    scaler = variant['scaler']
-    print(f"--> A construir matriz geométrica: {representation_id}")
-    
-    #comeco do pipeline de preprocessor para euclidian
-    preprocessor = ColumnTransformer(
-        transformers=[
-            #aplica escala normalizada aos valores numericos & codifica as categorias
-            ('num', scaler, numeric_features),
-            ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), categorical_features)
-        ])
-    #dataframe na matriz numerica para EUCLID
-    X_euclid = preprocessor.fit_transform(df)
+    df_v = df.copy()
+    iqr_params = ""
+    if variant["apply_adr_iqr"]:
+        #ComADR: remove linhas fora do IQR de ADR (filtro de preco para clustering)
+        df_v, lo, hi, n_drop = apply_adr_iqr_filter(df_v)
+        iqr_params = f"adr_iqr=[{lo:.1f},{hi:.1f}];n_drop={n_drop}"
 
-    #ikmeans para encontrar centroides
-    print("A executar iK-Means para encontrar seeds")
+    #constroi matriz X (escala numerica + one-hot categoricas)
+    preprocessor = build_preprocessor(variant["numeric"], variant["scaler"]) #constroi o preprocessor
+    X = preprocessor.fit_transform(df_v) #transforma os dados
+    n_feat = X.shape[1] #numero de features
+    rep_id = build_rep_id( #constroi o id da representacao
+        variant["scaler_name"], variant["adr_status"], n_feat, variant["calendar_mode"]
+    )
+    rep = short_rep_label( #constroi o label da representacao
+        variant["scaler_name"], variant["adr_status"], variant["calendar_mode"]
+    )
+    print(f"\n--> {rep} | {rep_id} | n={len(df_v)}")
+
+    #iK-Means: descobre K automatico e corre K-Means com esses centroides
+    print("[iK-Means]...", end=" ", flush=True)
+    t0 = time.time()
     ikm = iKMeans(min_cluster_size=11, random_state=seed)
-    ikm_centroids = ikm.find_anomalous_patterns(X_euclid) #procura patterns anómalos nos dados
-    k_ikm = len(ikm_centroids) #guarda o nº de clusters
-    print(f"[iK-Means] Encontrou {k_ikm} clusters válidos!")
+    ikm_centroids = ikm.find_anomalous_patterns(X) #encontra os centroides anomalos
+    k_ikm = len(ikm_centroids) #numero de clusters descobertos
+    labels_ikm = KMeans(n_clusters=k_ikm, init=ikm_centroids, n_init=1, random_state=seed).fit_predict(X) #treina o modelo e devolve as labels de cluster
+    rt_ikm = round(time.time() - t0, 2) #tempo decorrido (wall time)
+    sil_ikm = silhouette_score(X, labels_ikm, sample_size=min(30000, len(X)), random_state=seed) #silhouette do modelo
+    ik_params = f"min_cluster_size=11;random_state={seed};k_auto={k_ikm}" #parametros do modelo
+    if iqr_params: #se o iqr_params nao for vazio, adiciona os parametros do modelo
+        ik_params += f";{iqr_params}"
+    results.append(log_row( #acrescenta dict a lista results (depois vira experiments.csv)
+        rep, rep_id, "iK-Means", k_ikm, seed, rt_ikm, #parametros da linha
+        {"silhouette": round(sil_ikm, 4), 
+         "calinski_harabasz": round(calinski_harabasz_score(X, labels_ikm), 2), #calinski_harabasz do modelo
+         "davies_bouldin": round(davies_bouldin_score(X, labels_ikm), 4)}, #davies_bouldin do modelo
+        len(df_v), sample_rule_all(), parameters=ik_params, #parametros do modelo
+        diagnostics={"min_cluster_pct": min_cluster_pct(labels_ikm)}, #percentagem do cluster mais pequeno
+    ))
+    print(f"K={k_ikm} Sil={sil_ikm:.4f} ({rt_ikm}s)")
 
-    #loop para modelos kmeans com K valores distintos
+    km_params = f"n_init=10;init=k-means++;random_state={seed}"
+    if iqr_params:
+        km_params += f";{iqr_params}"
+
+    #K-Means baseline: sweep de k no intervalo predefinido
     for k in k_grid:
-        print(f"    A treinar K-Means (K={k})...", end=" ", flush=True)
-        start_time = time.time()
-        
-        #utilizacao de centroides do ikmeans se K coincidir
-        if k == k_ikm:
-            kmeans = KMeans(n_clusters=k, init=ikm_centroids, n_init=1, random_state=seed)
-            algorithm_name = 'K-Means (init=iK-Means)'
-        # senão inicialização aleatória
-        else:
-            kmeans = KMeans(n_clusters=k, random_state=seed, n_init=10)
-            algorithm_name = 'K-Means Baseline'
-
-        #atribui clusters aos dados  
-        labels = kmeans.fit_predict(X_euclid)
-        runtime = round(time.time() - start_time, 2)
-        
-        #calculo dos indices
-        silhouette = silhouette_score(X_euclid, labels, sample_size=30000, random_state=seed) 
-        ch_score = calinski_harabasz_score(X_euclid, labels)
-        db_score = davies_bouldin_score(X_euclid, labels)
-        
-        print(f"Concluído em {runtime}s")
-        
-        #guarda os resultados
-        results.append({
-            'representation_id': representation_id,
-            'algorithm': algorithm_name,
-            'k': k,
-            'seed': seed,
-            'runtime_sec': runtime,
-            'silhouette': round(silhouette, 4),
-            'calinski_harabasz': round(ch_score, 2),
-            'davies_bouldin': round(db_score, 4)
+        t0 = time.time()
+        labels = KMeans(n_clusters=k, random_state=seed, n_init=10).fit_predict(X) #treina o modelo e devolve as labels de cluster
+        rt = round(time.time() - t0, 2) #tempo decorrido (wall time)
+        sil = silhouette_score(X, labels, sample_size=min(30000, len(X)), random_state=seed) #silhouette do modelo
+        mcp = min_cluster_pct(labels) #percentagem do cluster mais pequeno
+        results.append(log_row( #acrescenta dict a lista results (depois vira experiments.csv)
+            rep, rep_id, "K-Means", k, seed, rt,
+            {"silhouette": round(sil, 4),
+             "calinski_harabasz": round(calinski_harabasz_score(X, labels), 2), #calinski_harabasz do modelo
+             "davies_bouldin": round(davies_bouldin_score(X, labels), 4)}, #davies_bouldin do modelo
+            len(df_v), sample_rule_all(), parameters=km_params, #parametros do modelo
+            diagnostics={"min_cluster_pct": mcp}, #percentagem do cluster mais pequeno
+        ))
+        sweep_rows.append({ #acrescenta dict a lista sweep_rows (depois vira k_sweep_summary.csv)
+            "rep": rep, "rep_id": rep_id, "k": k,
+            "silhouette": round(sil, 4), "davies_bouldin": round(davies_bouldin_score(X, labels), 4),
+            "min_cluster_pct": mcp,
         })
-    print("-" * 30)
+        print(f"K={k} Sil={sil:.4f} min_cl%={mcp}% ({rt}s)") 
 
-#exporta os resultados para ficheiros csv
-print("\n A GRAVAR LOG ")
-df_results = pd.DataFrame(results)#dados para dataframe 
-output_csv = 'experiments.csv'
-df_results.to_csv(output_csv, index=False)
+#guarda log e resumo do sweep
+pd.DataFrame(results).to_csv("experiments.csv", index=False)
+pd.DataFrame(sweep_rows).to_csv("k_sweep_summary.csv", index=False)
+print("\n[Sucesso] experiments.csv, k_sweep_summary.csv")
 
-print(f"[Sucesso] Experiências gravadas no ficheiro: {output_csv}")
-print("\nTabela Resumo:")
-print(df_results.sort_values(by='silhouette', ascending=False).head(5)[['representation_id', 'algorithm', 'k', 'silhouette', 'davies_bouldin']].to_string(index=False))
+#seleciona k final na rep principal (Std-SemADR): max Silhouette com min_cluster_pct>=1%
+primary_rep = "Std-SemADR"
+df_sweep = pd.DataFrame(sweep_rows) #cria o dataframe de resultados
+sub_primary = df_sweep[df_sweep["rep"] == primary_rep] #filtra o dataframe de resultados para a representacao principal
+k_sel = select_k_from_sweep(sub_primary, min_pct=1.0) #seleciona o k final
+save_selected_k(k_sel)
+#linhas k=8 e k=k_sel so para comparar metricas no texto (a escolha e so k_sel)
+row_k8 = sub_primary[sub_primary["k"] == 8].iloc[0]
+row_sel = sub_primary[sub_primary["k"] == k_sel].iloc[0]
+rep_id_primary = sub_primary.iloc[0]["rep_id"]
+sel_note = ( 
+    f"k_selected={k_sel} (sil={row_sel['silhouette']}, min_cl%={row_sel['min_cluster_pct']}); " #silhouette e percentagem do cluster mais pequeno
+    f"k=8 not final (sil={row_k8['silhouette']}, min_cl%={row_k8['min_cluster_pct']}); " #silhouette e percentagem do cluster mais pequeno
+    f"rule=min_cluster_pct>=1%" #regra para selecionar o k
+)
+with open("selection_notes.txt", "w", encoding="utf-8") as f: 
+    f.write(sel_note + "\n") #escreve a nota no ficheiro
+
+#nota sobre Robust
+rob_sub = df_sweep[(df_sweep["rep"] == "Robust-SemADR") & (df_sweep["k"] == k_sel)]
+rob_note = "" 
+if not rob_sub.empty: 
+    rob_note = f"; Robust-SemADR k={k_sel} min_cl%={rob_sub.iloc[0]['min_cluster_pct']}% (sensitivity only)" #nota sobre Robust (so sensibilidade; perfil final usa Std)
+
+#linha extra no experiments.csv a documentar a escolha do k final
+results.append(log_row( 
+    primary_rep, rep_id_primary, "K-selection", k_sel, seed, 0, #parametros da linha
+    {"silhouette": row_sel["silhouette"], "calinski_harabasz": None, "davies_bouldin": None}, #so silhouette preenchida; CH/DB None (linha de decisao, nao treino)
+    len(df), sample_rule_all(), #parametros do modelo
+    parameters="rule: max silhouette with min_cluster_pct>=1%", #regra para selecionar o k
+    diagnostics={"min_cluster_pct": row_sel["min_cluster_pct"]}, #percentagem do cluster mais pequeno
+    notes=sel_note + rob_note, #notas textuais (escolha de k + sensibilidade Robust)
+))
+pd.DataFrame(results).to_csv("experiments.csv", index=False)
+print(f"\n[K selecionado] {sel_note}")

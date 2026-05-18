@@ -1,0 +1,5 @@
+flag,cluster_a,cluster_b,channel,segment,note
+duplicate_modal_channel_segment,0.0,1.0,TA/TO,Online TA,interpret clusters with caution; modals not unique
+duplicate_modal_channel_segment,0.0,2.0,TA/TO,Online TA,interpret clusters with caution; modals not unique
+duplicate_modal_channel_segment,1.0,2.0,TA/TO,Online TA,interpret clusters with caution; modals not unique
+robust_micro_cluster,,,,,Robust-SemADR k=4 min_cluster_pct=0.12% (sensitivity only; final profile uses Std)

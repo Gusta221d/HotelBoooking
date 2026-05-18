@@ -1,0 +1,5 @@
+cluster_ref,cluster_other,rep_ref,rep_other,Std-SemADR_pct,Robust-SemADR_pct,Std-SemADR_lead_time_med,Robust-SemADR_lead_time_med,Std-SemADR_channel,Robust-SemADR_channel,Std-SemADR_segment,Robust-SemADR_segment,channel_match,segment_match,lead_time_close,profile_agreement
+0,1,Std-SemADR,Robust-SemADR,38.23,49.92,76.0,64.0,TA/TO,TA/TO,Online TA,Online TA,True,True,True,0.75
+1,0,Std-SemADR,Robust-SemADR,53.11,49.77,78.0,81.0,TA/TO,TA/TO,Online TA,Groups,True,False,True,0.75
+2,2,Std-SemADR,Robust-SemADR,5.73,0.12,25.0,244.0,TA/TO,TA/TO,Online TA,Groups,True,False,False,0.75
+3,3,Std-SemADR,Robust-SemADR,2.93,0.19,5.0,4.0,Corporate,Corporate,Corporate,Corporate,True,True,True,0.75

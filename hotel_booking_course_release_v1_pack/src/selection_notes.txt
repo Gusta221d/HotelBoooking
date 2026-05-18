@@ -1,0 +1,1 @@
+k_selected=4 (sil=0.1256, min_cl%=2.93); k=8 not final (sil=0.1413, min_cl%=0.12); rule=min_cluster_pct>=1%

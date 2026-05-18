@@ -1,53 +1,33 @@
-## Estrutura do Repositório
+## Hotel Booking Clustering — course release v1
 
-- `hotel_booking_course_release_v1_pack/runAll.py` -> ponto de entrada único para executar a pipeline completa
-- `hotel_booking_course_release_v1_pack/src/` -> scripts fonte
-- `hotel_booking_course_release_v1_pack/src/experiments.csv` -> registo de experiências
-- `hotel_booking_course_release_v1_pack/src/stability_report.csv` -> resumo de estabilidade (ARI)
-- `hotel_booking_course_release_v1_pack/src/cluster_profile_k8.csv` -> tabela de perfil inicial de clusters (k=8)
-- `hotel_booking_course_release_v1_pack/src/graficos_relatorio/` -> figuras geradas
-- `environment.yml` -> especificação do ambiente
+### Dataset (versioning & governance)
 
-## Dataset
+| Campo | Valor |
+|-------|--------|
+| Release | **course release v1** |
+| Ficheiro | `hotel_bookings_course_release_v1.csv` |
+| SHA-256 | `7c2ae42a7353905ea136e5c2287f17c92c5435826598bfbb8491c6f0c7b1fc06` |
+| Fonte | [Kaggle — Hotel Booking Demand](https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand) |
 
-- Dataset utilizado: **Hotel Booking Demand - course release v1**
-- Nome do ficheiro bruto: `hotel_bookings_course_release_v1.csv`
-- SHA-256: `7c2ae42a7353905ea136e5c2287f17c92c5435826598bfbb8491c6f0c7b1fc06`
-- Fonte pública: Kaggle (Jesse Mostipak)  
-  <https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand>
-
-
-## Configuração do Ambiente
-
-A partir da raiz do repositório:
-
+### Ambiente
 ```bash
 conda env create -f environment.yml
 conda activate hotel-booking-clustering
 ```
 
-## Execução Reprodutível 
-
-A partir da raiz do repositório:
-
+### Execução
 ```bash
-python hotel_booking_course_release_v1_pack/runAll.py
+cd hotel_booking_course_release_v1_pack
+python runAll.py
 ```
 
-Isto executa, por ordem:
-
-1. `edaClean.py`
-2. `edaVisuals.py`
-3. `train_models.py`
-4. `estabel_hierar.py`
-5. `cluster_profile.py`
-
-## Principais Outputs
-
-Após correr a pipeline, os principais artefactos gerados são:
-
-- `hotel_booking_course_release_v1_pack/hotel_bookings_clean.csv`
-- `hotel_booking_course_release_v1_pack/src/experiments.csv`
-- `hotel_booking_course_release_v1_pack/src/stability_report.csv`
-- `hotel_booking_course_release_v1_pack/src/cluster_profile_k8.csv`
-- `hotel_booking_course_release_v1_pack/src/graficos_relatorio/` (boxplot, histograma e dendrograma Ward)
+### Estrutura de outputs
+- `tables/` — missingness, resumo de outliers
+- `src/experiments.csv` — log (`run_id`, `date`, `rep_id`, `metric`, `metric_sentence`, `sample_rule`, …)
+- `src/cluster_profile_scaler_sensitivity.csv` — Std vs Robust
+- `src/cluster_profile_adr_sensitivity.csv` — SemADR vs ComADR
+- `src/graficos_relatorio/` — todas as figuras (EDA, dendrograma, E4)
+- `src/k_sweep_summary.csv` — sweep completo de K por representação
+- `src/selected_k.txt` — K escolhido (Silhouette + tamanho mínimo de cluster)
+- `src/stability_report.csv` — ARI e Silhouette (10 seeds)
+- `src/cluster_profile_k*.csv` — perfil final (Std-SemADR)

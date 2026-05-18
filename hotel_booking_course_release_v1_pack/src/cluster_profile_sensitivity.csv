@@ -1,0 +1,9 @@
+representation,cluster,n_bookings,pct_bookings,lead_time_median,total_nights_median,distribution_channel_mode,market_segment_mode,deposit_type_mode
+Std-SemADR,0,37121,32.74,48.0,3.0,TA/TO,Online TA,No Deposit
+Std-SemADR,1,15138,13.35,133.0,7.0,TA/TO,Online TA,No Deposit
+Std-SemADR,2,57857,51.03,84.0,2.0,TA/TO,Groups,No Deposit
+Std-SemADR,3,3264,2.88,4.0,1.0,Corporate,Corporate,No Deposit
+Std-ComADR,0,40411,35.64,49.0,3.0,TA/TO,Online TA,No Deposit
+Std-ComADR,1,55272,48.75,87.0,2.0,TA/TO,Groups,No Deposit
+Std-ComADR,2,3266,2.88,4.0,1.0,Corporate,Corporate,No Deposit
+Std-ComADR,3,14431,12.73,136.0,7.0,TA/TO,Online TA,No Deposit

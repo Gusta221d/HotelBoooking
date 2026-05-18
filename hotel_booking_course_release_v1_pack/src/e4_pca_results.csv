@@ -1,0 +1,13 @@
+representation_id,algorithm,k,seed,runtime_sec,silhouette,silhouette_std,calinski_harabasz,davies_bouldin,davies_bouldin_std,n_components
+EUCLID-SemADR-Original,K-Means,3,mean_5seeds,1.39,0.0973,0.0067,9155.27,2.6465,0.0966,54
+EUCLID-SemADR-Original,K-Means,4,mean_5seeds,1.1,0.0937,0.0098,8984.95,2.3517,0.1238,54
+EUCLID-SemADR-Original,K-Means,5,mean_5seeds,1.58,0.0948,0.0055,8893.77,2.1198,0.0674,54
+EUCLID-SemADR-Original,K-Means,6,mean_5seeds,1.49,0.0928,0.0023,9001.61,1.9391,0.143,54
+EUCLID-SemADR-Original,K-Means,7,mean_5seeds,1.6,0.1019,0.0078,9259.47,1.8132,0.1233,54
+EUCLID-SemADR-Original,K-Means,8,mean_5seeds,1.8,0.1052,0.0043,9429.59,1.8111,0.0312,54
+EUCLID-SemADR-PCA18,K-Means,3,mean_5seeds,0.68,0.1429,0.0603,10178.86,2.2709,0.3532,18
+EUCLID-SemADR-PCA18,K-Means,4,mean_5seeds,0.64,0.1171,0.0119,10321.86,2.1024,0.1212,18
+EUCLID-SemADR-PCA18,K-Means,5,mean_5seeds,0.82,0.1083,0.0104,10071.8,2.0238,0.1148,18
+EUCLID-SemADR-PCA18,K-Means,6,mean_5seeds,0.8,0.1183,0.0077,10404.66,1.8084,0.0583,18
+EUCLID-SemADR-PCA18,K-Means,7,mean_5seeds,0.91,0.1324,0.0085,10759.98,1.6806,0.0623,18
+EUCLID-SemADR-PCA18,K-Means,8,mean_5seeds,1.07,0.1314,0.0063,11383.66,1.5552,0.0774,18

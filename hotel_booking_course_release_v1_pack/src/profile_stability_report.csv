@@ -1,0 +1,2 @@
+metric,description,value_mean
+profile_agreement,channel+segment+lead_time aligned vs seed 42,0.8889

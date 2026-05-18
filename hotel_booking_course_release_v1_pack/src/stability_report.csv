@@ -1,2 +1,2 @@
-representation_id,k,seeds_tested,ari_mean,ari_std,n_pairs
-EUCLID-SemADR,8,"42,67,123,2026,71",0.4591,0.19,10
+rep,k,n_seeds,ari_mean,ari_std,silhouette_mean,silhouette_std,profile_agreement_mean,profile_agreement_std,interpretation,sample_indices_file
+Std-SemADR,4,10,0.6675,0.2567,0.1204,0.0082,0.8889,0.1111,moderately unstable,sample_indices_20k_seed42.txt

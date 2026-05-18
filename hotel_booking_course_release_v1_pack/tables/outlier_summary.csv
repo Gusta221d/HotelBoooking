@@ -1,0 +1,16 @@
+column,iqr_lower,iqr_upper,n_iqr_outliers,pct_iqr_outliers,removed_in_base_clean
+lead_time,-195.0,373.0,3005,2.52,False
+stays_in_weekend_nights,-3.0,5.0,265,0.22,False
+stays_in_week_nights,-2.0,6.0,3354,2.81,False
+adults,2.0,2.0,29710,24.88,False
+children,0.0,0.0,8590,7.19,False
+babies,0.0,0.0,917,0.77,False
+is_repeated_guest,0.0,0.0,3810,3.19,False
+previous_cancellations,0.0,0.0,6484,5.43,False
+previous_bookings_not_canceled,0.0,0.0,3620,3.03,False
+required_car_parking_spaces,0.0,0.0,7416,6.21,False
+total_of_special_requests,-1.5,2.5,2877,2.41,False
+adr,0.01,211.065,5753,4.82,False
+arrival_date_week_number,-17.0,71.0,0,0.0,False
+arrival_date_day_of_month,-14.5,45.5,0,0.0,False
+adr_iqr_would_remove,0.01,211.065,5753,4.82,False

@@ -9,7 +9,7 @@ class iKMeans:
         self.labels_ = None
         self.inertia_ = None
         self.initial_centroids_ = None
-    #distancia matematica do pdf
+    #distancia ao quadrado normalizada por coluna: (u-v)^2 / r^2 com r = amplitude (max-min) por dimensao
     def _normalized_squared_distance(self, u, v, r):
         return np.sum(((u - v) / r) ** 2, axis=-1)
 

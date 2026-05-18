@@ -1,64 +1,63 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import sys
 
-print("--------- EDA --------- ")
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
+from pipeline_utils import plots_dir
+
+print("--------- EDA visual --------- ")
+
+#carrega original e clean
 try:
-    df_original = pd.read_csv('../hotel_bookings_course_release_v1.csv')
-    df_clean = pd.read_csv('../hotel_bookings_clean.csv') 
-    print("[Sucesso] Ficheiros encontrados e carregados")
+    df_original = pd.read_csv("../hotel_bookings_course_release_v1.csv")
+    df_clean = pd.read_csv("../hotel_bookings_clean.csv")
 except FileNotFoundError:
-    print("ERRO: Não foram encontrados os ficheiros")
+    print("ERRO: CSV em falta")
     sys.exit(1)
 
-output_dir = 'graficos_relatorio'
-#verifica se a pasta não existe, caso contrario vai a criar
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
+out_dir = plots_dir()
 sns.set_theme(style="whitegrid")
 
-#boxplot
-print("A gerar Boxplot do Preço (ADR)...")
-plt.figure(figsize=(12, 6)) #dimensão total da figura- largura 12 e altura 6
 
-#cria 1 subgrafico-1linha 2 colunas na 1 posicao
-plt.subplot(1, 2, 1)
-sns.boxplot(y=df_original['adr'], color='salmon')#cria o boxplot do adr original 
-plt.title('ADR Original - 5400€ Outlier)')
-plt.ylabel('Average Daily Rate (ADR)') #eixo do y
+def save_plot(name):
+    #guarda figura na pasta unica graficos_relatorio/
+    plt.savefig(os.path.join(out_dir, name), dpi=300)
 
-#cria 2 subgrafico-1linha 2 colunas na 2 posicao
-plt.subplot(1, 2, 2)
-sns.boxplot(y=df_clean['adr'], color='lightgreen')#cria o boxplot do adr o clean 
-plt.title('ADR Cleaned (After IQR Rule)')
-plt.ylabel('Average Daily Rate (ADR)')
 
-plt.tight_layout() #evita sobreposicoes
-plt.savefig(f'{output_dir}/1_boxplot_adr_comparacao.png', dpi=300)
+#boxplot ADR antes vs depois do clean de qualidade
+print("Boxplot ADR...")
+fig, axes = plt.subplots(1, 2, figsize=(12, 5)) #cria o grafico
+sns.boxplot(y=df_original["adr"], ax=axes[0], color="salmon") #cria o boxplot
+axes[0].set_title("ADR original") 
+sns.boxplot(y=df_clean["adr"], ax=axes[1], color="lightgreen") #cria o boxplot
+axes[1].set_title("ADR apos clean de qualidade") 
+plt.tight_layout() 
+save_plot("1_boxplot_adr.png")
 plt.close()
 
-#histograma
-print("A gerar Histogramas de Distribuição")
-fig, axes = plt.subplots(1, 2, figsize=(14, 5)) #cria uma figura com 2 subgraficos lado a lado
-
-#histograma com antecedencia da reserva
-sns.histplot(df_clean['lead_time'], bins=40, kde=True, ax=axes[0], color='skyblue')
-axes[0].set_title('Lead Time Distribution')
-axes[0].set_xlabel('Days of Lead Time')
-axes[0].set_ylabel('Frequency')
-
-#histograma do aadr apos retirar os outliers
-sns.histplot(df_clean['adr'], bins=40, kde=True, ax=axes[1], color='lightgreen')
-axes[1].set_title('ADR Distribution')
-axes[1].set_xlabel('Average Daily Rate (€)') 
-axes[1].set_ylabel('Frequency')
-
-plt.tight_layout()#evita sobreposicoes
-plt.savefig(f'{output_dir}/2_histogramas_distribuicao.png', dpi=300) 
+#boxplots de variaveis numericas com potencial outlier
+cols_plot = ["lead_time", "stays_in_week_nights", "adults", "total_of_special_requests"] #lista de variaveis que iram aparecer no boxplot
+cols_plot = [c for c in cols_plot if c in df_clean.columns] #filtra as variaveis que estao no dataframe
+print("Boxplots numericos...") 
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+for ax, col in zip(axes.flat, cols_plot): #ciclo para criar o boxplot
+    sns.boxplot(y=df_clean[col], ax=ax, color="skyblue") #cria o boxplot
+    ax.set_title(col) #define o titulo do boxplot
+plt.suptitle("Outliers numericos (base SemADR)")
+plt.tight_layout()
+save_plot("2_boxplots_numeric_outliers.png")
 plt.close()
 
-print(f"\n[Sucesso] Os gráficos foram gerados e guardados na pasta '{output_dir}'!")
+#histogramas de lead_time e ADR
+fig, axes = plt.subplots(1, 2, figsize=(14, 5)) 
+sns.histplot(df_clean["lead_time"], bins=40, kde=True, ax=axes[0], color="skyblue") 
+axes[0].set_title("Lead time")
+sns.histplot(df_clean["adr"], bins=40, kde=True, ax=axes[1], color="lightgreen")
+axes[1].set_title("ADR")
+plt.tight_layout() 
+save_plot("3_histogramas.png")
+plt.close()
+
+print(f"[Sucesso] Figuras em {out_dir}/")
