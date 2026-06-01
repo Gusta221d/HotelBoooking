@@ -1,0 +1,27 @@
+# Dataset bruto (obter localmente — ver README)
+hotel_booking_course_release_v1_pack/hotel_bookings_course_release_v1.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/

@@ -80,7 +80,7 @@ for variant in variants:
     ikm_centroids = ikm.find_anomalous_patterns(X) #encontra os centroides anomalos
     k_ikm = len(ikm_centroids) #numero de clusters descobertos
     labels_ikm = KMeans(n_clusters=k_ikm, init=ikm_centroids, n_init=1, random_state=seed).fit_predict(X) #treina o modelo e devolve as labels de cluster
-    rt_ikm = round(time.time() - t0, 2) #tempo decorrido (wall time)
+    rt_ikm = round(time.time() - t0, 2) #tempo decorrido
     sil_ikm = silhouette_score(X, labels_ikm, sample_size=min(30000, len(X)), random_state=seed) #silhouette do modelo
     ik_params = f"min_cluster_size=11;random_state={seed};k_auto={k_ikm}" #parametros do modelo
     if iqr_params: #se o iqr_params nao for vazio, adiciona os parametros do modelo
@@ -103,7 +103,7 @@ for variant in variants:
     for k in k_grid:
         t0 = time.time()
         labels = KMeans(n_clusters=k, random_state=seed, n_init=10).fit_predict(X) #treina o modelo e devolve as labels de cluster
-        rt = round(time.time() - t0, 2) #tempo decorrido (wall time)
+        rt = round(time.time() - t0, 2) #tempo decorrido
         sil = silhouette_score(X, labels, sample_size=min(30000, len(X)), random_state=seed) #silhouette do modelo
         mcp = min_cluster_pct(labels) #percentagem do cluster mais pequeno
         results.append(log_row( #acrescenta dict a lista results (depois vira experiments.csv)
@@ -132,7 +132,7 @@ df_sweep = pd.DataFrame(sweep_rows) #cria o dataframe de resultados
 sub_primary = df_sweep[df_sweep["rep"] == primary_rep] #filtra o dataframe de resultados para a representacao principal
 k_sel = select_k_from_sweep(sub_primary, min_pct=1.0) #seleciona o k final
 save_selected_k(k_sel)
-#linhas k=8 e k=k_sel so para comparar metricas no texto (a escolha e so k_sel)
+#linhas k=8 e k=k_sel so para comparar metricas no texto
 row_k8 = sub_primary[sub_primary["k"] == 8].iloc[0]
 row_sel = sub_primary[sub_primary["k"] == k_sel].iloc[0]
 rep_id_primary = sub_primary.iloc[0]["rep_id"]
@@ -157,7 +157,7 @@ results.append(log_row(
     len(df), sample_rule_all(), #parametros do modelo
     parameters="rule: max silhouette with min_cluster_pct>=1%", #regra para selecionar o k
     diagnostics={"min_cluster_pct": row_sel["min_cluster_pct"]}, #percentagem do cluster mais pequeno
-    notes=sel_note + rob_note, #notas textuais (escolha de k + sensibilidade Robust)
+    notes=sel_note + rob_note,
 ))
 pd.DataFrame(results).to_csv("experiments.csv", index=False)
 print(f"\n[K selecionado] {sel_note}")
